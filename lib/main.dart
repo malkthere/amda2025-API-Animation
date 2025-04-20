@@ -1,266 +1,182 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 
-void main() => runApp(MaterialApp(home: PlantCarePage()));
-
-class PlantCarePage extends StatefulWidget {
-  @override
-  _PlantCarePageState createState() => _PlantCarePageState();
+void main() {
+  runApp(MyApp());
 }
 
-class _PlantCarePageState extends State<PlantCarePage> {
-  final TextEditingController _controller = TextEditingController();
-  Map<String, dynamic>? _plantData;
-  bool _isLoading = false;
-  String? _error;
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Advanced Animations',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: AnimationHomePage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
 
-  final String apiKey = 'BNG97557q7Xp2JYBOQVsjqUabaWjCc2ud7ELCq1N0vf0CP9wu5'; // 🔑 أدخل مفتاحك هنا
-  Set<String> _favorites = {};
-  String? _currentPlantName;
+class AnimationHomePage extends StatefulWidget {
+  @override
+  _AnimationHomePageState createState() => _AnimationHomePageState();
+}
 
+class _AnimationHomePageState extends State<AnimationHomePage>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = true;
+  double _opacity = 1.0;
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  var count=0;
   @override
   void initState() {
     super.initState();
-    loadFavorites();
-  }
-
-  Future<void> loadFavorites() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _favorites = prefs.getStringList('favorites')?.toSet() ?? {};
-    });
-  }
-
-  Future<void> toggleFavorite(String name) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if (_favorites.contains(name)) {
-        _favorites.remove(name);
-      } else {
-        _favorites.add(name);
-      }
-      prefs.setStringList('favorites', _favorites.toList());
-    });
-  }
-
-  Future<void> fetchPlantData(String query) async {
-    setState(() {
-      _isLoading = true;
-      _plantData = null;
-      _error = null;
-    });
-
-    final url = Uri.parse("https://api.plant.id/v2/identify");
-
-    final body = json.encode({
-      "api_key": apiKey,
-      "images": [],
-      "modifiers": ["crops-fast", "similar_images"],
-      "plant_language": "en",
-      "plant_details": ["common_names", "url", "name_authority", "wiki_description", "taxonomy", "synonyms", "watering", "growth_rate", "main_image"],
-    });
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['suggestions'] != null && data['suggestions'].isNotEmpty) {
-          final suggestion = data['suggestions'][0];
-          setState(() {
-            _plantData = {
-              'name': suggestion['plant_name'],
-              'binomial_name': suggestion['plant_details']?['scientific_name'],
-              'sun_requirements': suggestion['plant_details']?['sunlight']?.join(", "),
-              'watering': suggestion['plant_details']?['watering'],
-              'soil_ph': suggestion['plant_details']?['soil_ph'],
-              'description': suggestion['plant_details']?['wiki_description']?['value'],
-              'main_image_path': suggestion['plant_details']?['main_image']['url'],
-            };
-            _currentPlantName = suggestion['plant_name'];
-          });
-        } else {
-          setState(() {
-            _error = 'لم يتم العثور على معلومات عن هذه النبتة.';
-          });
-        }
-      } else {
-        setState(() {
-          _error = 'حدث خطأ: ${response.statusCode}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'فشل الاتصال: $e';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  String fakeTranslateToArabic(String text) {
-    if (text.toLowerCase().contains("basil")) return "الريحان نبات عطري يُستخدم كثيرًا في الطهي.";
-    if (text.toLowerCase().contains("mint")) return "النعناع نبات سريع النمو برائحة مميزة.";
-    if (text.toLowerCase().contains("tomato")) return "الطماطم نبات يحتاج إلى ضوء الشمس وسقاية جيدة.";
-    return "🌍 الترجمة التلقائية غير متوفرة لهذا النص حاليًا.";
-  }
-
-  Widget buildPlantCard() {
-    if (_plantData == null) return SizedBox();
-
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 16),
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_plantData!['main_image_path'] != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  _plantData!['main_image_path'],
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            if (_currentPlantName != null)
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(
-                    _favorites.contains(_currentPlantName!) ? Icons.star : Icons.star_border,
-                    color: Colors.orange,
-                  ),
-                  onPressed: () => toggleFavorite(_currentPlantName!),
-                  tooltip: 'أضف إلى المفضلة',
-                ),
-              ),
-            SizedBox(height: 12),
-            if (_plantData!['name'] != null)
-              Text("🌿 الاسم: ${_plantData!['name']}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            if (_plantData!['binomial_name'] != null)
-              Text("🔬 الاسم العلمي: ${_plantData!['binomial_name']}"),
-            SizedBox(height: 10),
-            if (_plantData!['sun_requirements'] != null)
-              Text("☀️ الإضاءة: ${_plantData!['sun_requirements']}"),
-            if (_plantData!['watering'] != null)
-              Text("💧 كمية المياه: ${_plantData!['watering']}"),
-            if (_plantData!['soil_ph'] != null)
-              Text("⚗️ pH التربة: ${_plantData!['soil_ph']}"),
-            if (_plantData!['description'] != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("📋 الوصف بالإنجليزية:\n${_plantData!['description']}"),
-                    SizedBox(height: 10),
-                    Text("📘 الترجمة العربية:\n${fakeTranslateToArabic(_plantData!['description'])}",
-                      style: TextStyle(color: Colors.green.shade800),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
+         _controller = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
     );
+    _animation = Tween<double>(begin: 0.0, end: 300.0).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggleContainer() {
+    setState(() {
+      _expanded = !_expanded;
+    });
+  }
+
+  void _toggleOpacity() {
+    setState(() {
+      _opacity = _opacity == 0.0 ? 1.0 : 0.0;
+    });
+  }
+
+  void _startManualAnimation() {
+    _controller.reset();
+    _controller.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("معلومات العناية بالنبات"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.star),
-            tooltip: 'المفضلات',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => FavoritesPage(
-                    favorites: _favorites,
-                    onSelectPlant: (name) {
-                      _controller.text = name;
-                      fetchPlantData(name);
+    bool isRed=false;
+
+    var _listKey;
+    var items=["1","2","3","4"];
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Tabbed App"),
+          bottom: TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.home), text: "Home"),
+              Tab(icon: Icon(Icons.star), text: "Favorites"),
+              Tab(icon: Icon(Icons.settings), text: "Settings"),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            Center(
+                child: DataTable(
+              columns: [
+                DataColumn(label: Text('Name')),
+                DataColumn(label: Text('Age')),
+              ],
+              rows: [
+                DataRow(cells: [
+                  DataCell(Text('John')),
+                  DataCell(Text('25')),
+                ]),
+                DataRow(cells: [
+                  DataCell(Text('Jane')),
+                  DataCell(Text('30')),
+                ]),
+              ],
+            )
+            ),
+            Center(child: PageView(
+              children: [
+                Container(color: Colors.red),
+                Container(child: DataTable(
+                  columns: [
+                    DataColumn(label: Text('Name')),
+                    DataColumn(label: Text('Age')),
+                  ],
+                  rows: [
+                    DataRow(cells: [
+                      DataCell(Text('John')),
+                      DataCell(Text('25')),
+                    ]),
+                    DataRow(cells: [
+                      DataCell(Text('Jane')),
+                      DataCell(Text('30')),
+                    ]),
+                  ],
+                )),
+                Container(child: GridView.count(
+                  crossAxisCount: 2,
+                  children: List.generate(6, (index) {
+                    return Card(
+                      child: Center(child: Text('Item $index')),
+                    );
+                  }),
+                ),),
+              ],
+            )),
+            Center(child: PageView(
+              children:[
+                Center(
+                  child: TweenAnimationBuilder(
+                    tween: Tween<double>(begin: 0, end: 1),
+                    duration: Duration(seconds: 2),
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 500),
+                          color: value==0 ? Colors.red : Colors.blue,
+                          width: value==0 ? 100 : 200,
+                          height: 100,
+                        ),
+                      );
                     },
                   ),
                 ),
-              );
-            },
-          )
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                labelText: "ادخل اسم النبتة (بالإنجليزية)",
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () => fetchPlantData(_controller.text.trim()),
+                AnimatedSwitcher(
+                  duration: Duration(milliseconds: 500),
+                  child: Text(
+                    '$count=0',
+                    key: ValueKey<int>(count),
+                    style: TextStyle(fontSize: 50),
+                  ),
                 ),
-              ),
-            ),
-            if (_isLoading) ...[
-              SizedBox(height: 20),
-              CircularProgressIndicator(),
-            ] else if (_error != null) ...[
-              SizedBox(height: 20),
-              Text(_error!, style: TextStyle(color: Colors.red)),
-            ] else ...[
-              buildPlantCard(),
-            ],
+                AnimatedList(
+                  key: _listKey,
+                  initialItemCount: items.length,
+                  itemBuilder: (context, index, animation) {
+                    return SizeTransition(
+                      sizeFactor: animation,
+                      child: ListTile(title: Text(items[index]),onTap: (){},),
+                    );
+                  },
+                )
+
+    ]
+
+            )),
           ],
         ),
       ),
-    );
-  }
-}
-
-class FavoritesPage extends StatelessWidget {
-  final Set<String> favorites;
-  final Function(String) onSelectPlant;
-
-  const FavoritesPage({required this.favorites, required this.onSelectPlant});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("النباتات المفضلة")),
-      body: favorites.isEmpty
-          ? Center(child: Text("لا توجد نباتات مفضلة بعد."))
-          : ListView(
-        children: favorites.map((plant) {
-          return ListTile(
-            title: Text(plant),
-            leading: Icon(Icons.local_florist, color: Colors.green),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () {
-              onSelectPlant(plant);
-              Navigator.pop(context);
-            },
-          );
-        }).toList(),
-      ),
-    );
+    )
+    ;
   }
 }
