@@ -11,15 +11,29 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ExpansionTile(
-        title: Text("Click to expand"),
-        children: [
-          ListTile(title: Text("Item 1"), trailing:Icon(Icons.ice_skating), onTap: (){   },),
-          ListTile(title: Text("Item 2"),trailing:Icon(Icons.museum)),
-
-        ],
-
-      ),
+      body: DefaultTabController(
+        length: 3,
+        child: Column(
+          children: [
+            TabBar(
+              tabs: [
+                Tab(text: 'Chats'),
+                Tab(text: 'Status'),
+                Tab(text: 'Calls'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Center(child: Text('Chats Screen')),
+                  Center(child: Text('Status Screen')),
+                  Center(child: Text('Calls Screen')),
+                ],
+              ),
+            ),
+          ],
+        ),
+      )
     );
   }
 }
