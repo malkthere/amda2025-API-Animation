@@ -10,38 +10,41 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TabBarView Example',
+      title: 'PageView Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const TabBarDemo(),
+      home: const PageViewDemo(),
     );
   }
 }
 
-class TabBarDemo extends StatefulWidget {
-  const TabBarDemo({super.key});
+class PageViewDemo extends StatefulWidget {
+  const PageViewDemo({super.key});
 
   @override
-  State<TabBarDemo> createState() => _TabBarDemoState();
+  State<PageViewDemo> createState() => _PageViewDemoState();
 }
 
-class _TabBarDemoState extends State<TabBarDemo> with TickerProviderStateMixin {
-  late TabController _tabController;
+class _PageViewDemoState extends State<PageViewDemo> {
+  final PageController _pageController = PageController(initialPage: 0);
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      print('Selected Tab Index: ${_tabController.index}');
-      // You can perform actions based on the selected tab here
+    _pageController.addListener(() {
+      setState(() {
+        _currentPage = _pageController.page?.round() ?? 0;
+      });
+      print('Current Page: $_currentPage');
+      // You can perform actions based on the current page here
     });
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -49,52 +52,69 @@ class _TabBarDemoState extends State<TabBarDemo> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TabBarView Example'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const <Widget>[
-            Tab(icon: Icon(Icons.directions_car)),
-            Tab(text: 'Music'),
-            Tab(icon: Icon(Icons.movie)),
-          ],
-        ),
+        title: const Text('PageView Example'),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const <Widget>[
-          Center(
-            child: Text(
-              'Car Tab Content',
-              style: TextStyle(fontSize: 24),
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              children: <Widget>[
+                _buildPage(Colors.red, 'Page 1'),
+                _buildPage(Colors.green, 'Page 2'),
+                _buildPage(Colors.blue, 'Page 3'),
+                _buildPage(Colors.orange, 'Page 4'),
+              ],
+              onPageChanged: (int page) {
+                print('Page changed to: $page');
+                // Another way to listen to page changes
+              },
             ),
           ),
-           Column(
-             children: [
-               ExpansionTile(
-                  title: Text('Settings'),
-                  children: [
-                    ListTile(title: Text('Theme')),
-                    ListTile(title: Text('Notifications')),
-                    ListTile(title: Text('Privacy')),
-                  ],
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _currentPage > 0
+                      ? () {
+                    _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                      : null,
                 ),
-               ExpansionTile(
-                  title: Text('prefrences'),
-                  children: [
-                    ListTile(title: Text('food')),
-                    ListTile(title: Text('storts')),
-                    ListTile(title: Text('Privacy')),
-                  ],
+                Text('Page ${_currentPage + 1} of 4'),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: _currentPage < 3
+                      ? () {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                      : null,
                 ),
-             ],
-           ),
-          Center(
-            child: Text(
-              'Movie Tab Content',
-              style: TextStyle(fontSize: 24),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPage(Color color, String text) {
+    return Container(
+      color: color,
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 32, color: Colors.white),
+        ),
       ),
     );
   }

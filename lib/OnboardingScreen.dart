@@ -11,20 +11,11 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DataTable(
-        columns: [
-          DataColumn(label: Text('Name')),
-          DataColumn(label: Text('Age')),
-        ],
-        rows: [
-          DataRow(cells: [
-            DataCell(Text('John')),
-            DataCell(Text('25')),
-          ]),
-          DataRow(cells: [
-            DataCell(Text('Jane')),
-            DataCell(Text('30')),
-          ]),
+      body: PageView(
+        children: [
+          Container(color: Colors.red, child: Center(child: Text('Page 1'))),
+          Container(color: Colors.blue, child: Center(child: Text('Page 2'))),
+          Container(color: Colors.green, child: Center(child: Text('Page 3'))),
         ],
       )
 
