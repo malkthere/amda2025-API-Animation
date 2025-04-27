@@ -1,182 +1,108 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Advanced Animations',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: AnimationHomePage(),
-      debugShowCheckedModeBanner: false,
+      title: 'ExpansionTile Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
     );
   }
 }
 
-class AnimationHomePage extends StatefulWidget {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
-  _AnimationHomePageState createState() => _AnimationHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _AnimationHomePageState extends State<AnimationHomePage>
-    with SingleTickerProviderStateMixin {
-  bool _expanded = true;
-  double _opacity = 1.0;
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  var count=0;
-  @override
-  void initState() {
-    super.initState();
-         _controller = AnimationController(
-      duration: Duration(seconds: 2),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 0.0, end: 300.0).animate(_controller)
-      ..addListener(() {
-        setState(() {});
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggleContainer() {
-    setState(() {
-      _expanded = !_expanded;
-    });
-  }
-
-  void _toggleOpacity() {
-    setState(() {
-      _opacity = _opacity == 0.0 ? 1.0 : 0.0;
-    });
-  }
-
-  void _startManualAnimation() {
-    _controller.reset();
-    _controller.forward();
-  }
+class _MyHomePageState extends State<MyHomePage> {
+  bool _isExpanded1 = false;
+  bool _isExpanded2 = false;
 
   @override
   Widget build(BuildContext context) {
-    bool isRed=false;
-
-    var _listKey;
-    var items=["1","2","3","4"];
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Tabbed App"),
-          bottom: TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.home), text: "Home"),
-              Tab(icon: Icon(Icons.star), text: "Favorites"),
-              Tab(icon: Icon(Icons.settings), text: "Settings"),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            Center(
-                child: DataTable(
-              columns: [
-                DataColumn(label: Text('Name')),
-                DataColumn(label: Text('Age')),
-              ],
-              rows: [
-                DataRow(cells: [
-                  DataCell(Text('John')),
-                  DataCell(Text('25')),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text('Jane')),
-                  DataCell(Text('30')),
-                ]),
-              ],
-            )
-            ),
-            Center(child: PageView(
-              children: [
-                Container(color: Colors.red),
-                Container(child: DataTable(
-                  columns: [
-                    DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Age')),
-                  ],
-                  rows: [
-                    DataRow(cells: [
-                      DataCell(Text('John')),
-                      DataCell(Text('25')),
-                    ]),
-                    DataRow(cells: [
-                      DataCell(Text('Jane')),
-                      DataCell(Text('30')),
-                    ]),
-                  ],
-                )),
-                Container(child: GridView.count(
-                  crossAxisCount: 2,
-                  children: List.generate(6, (index) {
-                    return Card(
-                      child: Center(child: Text('Item $index')),
-                    );
-                  }),
-                ),),
-              ],
-            )),
-            Center(child: PageView(
-              children:[
-                Center(
-                  child: TweenAnimationBuilder(
-                    tween: Tween<double>(begin: 0, end: 1),
-                    duration: Duration(seconds: 2),
-                    builder: (context, value, child) {
-                      return Opacity(
-                        opacity: value,
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 500),
-                          color: value==0 ? Colors.red : Colors.blue,
-                          width: value==0 ? 100 : 200,
-                          height: 100,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                AnimatedSwitcher(
-                  duration: Duration(milliseconds: 500),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ExpansionTile with onExpansionChanged'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            ExpansionTile(
+              title: const Text('Tile 1'),
+              subtitle: Text('Expanded: $_isExpanded1'),
+              initiallyExpanded: _isExpanded1,
+              onExpansionChanged: (bool expanded) {
+                setState(() {
+                  _isExpanded1 = expanded;
+                  print('Tile 1 expanded: $expanded');
+                  // You can perform other actions here when the tile expands/collapses
+                });
+              },
+              children: const <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: Text(
-                    '$count=0',
-                    key: ValueKey<int>(count),
-                    style: TextStyle(fontSize: 50),
+                    'This is the content of the first expansion tile. '
+                        'You can put any widgets you like here.',
                   ),
                 ),
-                AnimatedList(
-                  key: _listKey,
-                  initialItemCount: items.length,
-                  itemBuilder: (context, index, animation) {
-                    return SizeTransition(
-                      sizeFactor: animation,
-                      child: ListTile(title: Text(items[index]),onTap: (){},),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ExpansionTile(
+              title: const Text('Tile 2'),
+              subtitle: Text('Expanded: $_isExpanded2'),
+              initiallyExpanded: _isExpanded2,
+              onExpansionChanged: (bool expanded) {
+                setState(() {
+                  _isExpanded2 = expanded;
+                  print('Tile 2 expanded: $expanded');
+                  // Perform different actions for the second tile
+                  if (expanded) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Tile 2 is now expanded!')),
                     );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Tile 2 is now collapsed.')),
+                    );
+                  }
+                });
+              },
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.star),
+                  title: const Text('Item A'),
+                  onTap: () {
+                    print('Item A tapped in Tile 2');
                   },
-                )
-
-    ]
-
-            )),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.favorite),
+                  title: const Text('Item B'),
+                  onTap: () {
+                    print('Item B tapped in Tile 2');
+                  },
+                ),
+              ],
+            ),
+            // You can add more ExpansionTile widgets here
           ],
         ),
       ),
-    )
-    ;
+    );
   }
 }
