@@ -63,7 +63,10 @@ class _PageViewDemoState extends State<PageViewDemo> {
                 _buildPage(Colors.red, 'Page 1'),
                 _buildPage(Colors.green, 'Page 2'),
                 _buildPage(Colors.blue, 'Page 3'),
-                _buildPage(Colors.orange, 'Page 4'),
+                Center(
+                  child:  ElevatedButton(onPressed: () {  },
+                  child: Text("Enter the app"),),
+                ),
               ],
               onPageChanged: (int page) {
                 print('Page changed to: $page');
