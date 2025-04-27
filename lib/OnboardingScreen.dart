@@ -11,29 +11,23 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DefaultTabController(
-        length: 3,
-        child: Column(
-          children: [
-            TabBar(
-              tabs: [
-                Tab(text: 'Chats'),
-                Tab(text: 'Status'),
-                Tab(text: 'Calls'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  Center(child: Text('Chats Screen')),
-                  Center(child: Text('Status Screen')),
-                  Center(child: Text('Calls Screen')),
-                ],
-              ),
-            ),
-          ],
-        ),
+      body: DataTable(
+        columns: [
+          DataColumn(label: Text('Name')),
+          DataColumn(label: Text('Age')),
+        ],
+        rows: [
+          DataRow(cells: [
+            DataCell(Text('John')),
+            DataCell(Text('25')),
+          ]),
+          DataRow(cells: [
+            DataCell(Text('Jane')),
+            DataCell(Text('30')),
+          ]),
+        ],
       )
+
     );
   }
 }

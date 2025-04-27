@@ -87,8 +87,7 @@ class _TabBarDemoState extends State<TabBarDemo> with TickerProviderStateMixin {
                   ],
                 ),
              ],
-           )
-         ,
+           ),
           Center(
             child: Text(
               'Movie Tab Content',
