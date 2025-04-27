@@ -11,12 +11,11 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: PageView(
-        children: [
-          Container(color: Colors.red, child: Center(child: Text('Page 1'))),
-          Container(color: Colors.blue, child: Center(child: Text('Page 2'))),
-          Container(color: Colors.green, child: Center(child: Text('Page 3'))),
-        ],
+      body: GestureDetector(
+        onTap: () => print('Tapped!'),
+        onDoubleTap: () => print('Double Tapped!'),
+        onPanUpdate: (details) => print('Dragged: ${details.delta}'),
+        child: Container(width: 200, height: 200, color: Colors.blue),
       )
 
     );
