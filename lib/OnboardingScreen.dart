@@ -11,12 +11,22 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: InteractiveViewer(
-        boundaryMargin: EdgeInsets.all(20),
-        minScale: 0.5,
-        maxScale: 4.0,
-        child: Image.asset('assets/images/onboard1.png'),
-      )
+      body: Center(child: Row(children: [
+      Draggable<String>(
+      data: 'Drag me!',
+        feedback: Material(child: Text('Dragging...', style: TextStyle(fontSize: 18))),
+        child: Text('Drag Me'),
+      ),
+
+        DragTarget<String>(
+          onAcceptWithDetails: (data) => print('Dropped: $data'),
+          builder: (ctx, _, __) => Container(
+            width: 100, height: 100,
+            color: Colors.grey,
+            child: Center(child: Text('Drop Here')),
+          ),
+
+        ) ],),),
 
     );
   }
