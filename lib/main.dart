@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'OnboardingScreen.dart';
-
 void main() {
   runApp(const MyApp());
 }
@@ -12,113 +10,74 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PageView Example',
+      title: 'InteractiveViewer Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:  advancelayout(),
+      home: const InteractiveViewerDemo(),
     );
   }
 }
 
-class PageViewDemo extends StatefulWidget {
-  const PageViewDemo({super.key});
-
-  @override
-  State<PageViewDemo> createState() => _PageViewDemoState();
-}
-
-class _PageViewDemoState extends State<PageViewDemo> {
-  final PageController _pageController = PageController(initialPage: 0);
-  int _currentPage = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      setState(() {
-        _currentPage = _pageController.page?.round() ?? 0;
-      });
-      print('Current Page: $_currentPage');
-      // You can perform actions based on the current page here
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+class InteractiveViewerDemo extends StatelessWidget {
+  const InteractiveViewerDemo({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PageView Example'),
+        title: const Text('InteractiveViewer Example'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              children: <Widget>[
-                _buildPage(Colors.red, 'Page 1'),
-                _buildPage(Colors.green, 'Page 2'),
-                _buildPage(Colors.blue, 'Page 3'),
-                Center(
-                  child:  ElevatedButton(onPressed: () {  },
-                  child: Text("Enter the app"),),
-                ),
-              ],
-              onPageChanged: (int page) {
-                print('Page changed to: $page');
-                // Another way to listen to page changes
-              },
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Pinch to zoom, pan to move:',
+              style: TextStyle(fontSize: 16),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _currentPage > 0
-                      ? () {
-                    _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                      : null,
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 300,
+              height: 200,
+              child: InteractiveViewer(
+                boundaryMargin: const EdgeInsets.all(20.0),
+                minScale: 0.1,
+                maxScale: 5.0,
+                child: Image.asset(
+                  'assets/images/onboard1.png',
+                  fit: BoxFit.contain,
                 ),
-                Text('Page ${_currentPage + 1} of 4'),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: _currentPage < 3
-                      ? () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                      : null,
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPage(Color color, String text) {
-    return Container(
-      color: color,
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 32, color: Colors.white),
+            const SizedBox(height: 40),
+            const Text(
+              'InteractiveViewer with a Container:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: InteractiveViewer(
+                boundaryMargin: const EdgeInsets.all(10.0),
+                constrained: true, // Prevents scaling beyond the bounds
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[200],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber, width: 2),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Zoom & Pan Me!',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

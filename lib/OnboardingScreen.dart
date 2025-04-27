@@ -11,11 +11,11 @@ class _advancelayoutState extends State<advancelayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: GestureDetector(
-        onTap: () => print('Tapped!'),
-        onDoubleTap: () => print('Double Tapped!'),
-        onPanUpdate: (details) => print('Dragged: ${details.delta}'),
-        child: Container(width: 200, height: 200, color: Colors.blue),
+      body: InteractiveViewer(
+        boundaryMargin: EdgeInsets.all(20),
+        minScale: 0.5,
+        maxScale: 4.0,
+        child: Image.asset('assets/images/onboard1.png'),
       )
 
     );
