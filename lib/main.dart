@@ -28,7 +28,16 @@ class OrderLettersGame extends StatefulWidget {
 }
 
 class _OrderLettersGameState extends State<OrderLettersGame> {
-  final String _wordToOrder = 'Dr.Mazin';
+  final List<String> _availableWords = [
+    'Mazin',
+    'BANANA',
+    'ORANGE',
+    'GRAPE',
+    'MANGO',
+    'KIWI',
+    'PEACH',
+  ];
+  late String _wordToOrder;
   late List<String> _shuffledLetters;
   late List<String?> _placedLetters;
   bool _isCorrect = false;
@@ -36,6 +45,12 @@ class _OrderLettersGameState extends State<OrderLettersGame> {
   @override
   void initState() {
     super.initState();
+    _selectNewWord();
+  }
+
+  void _selectNewWord() {
+    final random = Random();
+    _wordToOrder = _availableWords[random.nextInt(_availableWords.length)];
     _shuffleWord();
   }
 
@@ -64,6 +79,7 @@ class _OrderLettersGameState extends State<OrderLettersGame> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: <Widget>[
             Text(
               'Unscramble: ${_shuffledLetters.join(' ')}',
@@ -102,7 +118,12 @@ class _OrderLettersGameState extends State<OrderLettersGame> {
                     setState(() {
                       if (_placedLetters[index] == null) {
                         _placedLetters[index] = letter;
-                        _shuffledLetters.remove(letter);
+                        // We need to remove only the first occurrence of the dragged letter
+                        // from the shuffled list to handle duplicate letters correctly.
+                        final indexToRemove = _shuffledLetters.indexOf(letter);
+                        if (indexToRemove != -1) {
+                          _shuffledLetters.removeAt(indexToRemove);
+                        }
                         _checkIfCorrect();
                       }
                     });
@@ -172,7 +193,7 @@ class _OrderLettersGameState extends State<OrderLettersGame> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _shuffleWord();
+                  _selectNewWord();
                 });
               },
               child: const Text('New Word'),
