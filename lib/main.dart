@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'OnboardingScreen.dart';
+import 'dart:math';
 
 void main() {
   runApp(const MyApp());
@@ -12,103 +11,171 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Draggable and DragTarget Example',
+      title: 'Order the Letters Game',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:  advancelayout(),
+      home: const OrderLettersGame(),
     );
   }
 }
 
-class DragAndDropDemo extends StatefulWidget {
-  const DragAndDropDemo({super.key});
+class OrderLettersGame extends StatefulWidget {
+  const OrderLettersGame({super.key});
 
   @override
-  State<DragAndDropDemo> createState() => _DragAndDropDemoState();
+  State<OrderLettersGame> createState() => _OrderLettersGameState();
 }
 
-class _DragAndDropDemoState extends State<DragAndDropDemo> {
-  Color _targetColor = Colors.grey[300]!;
-  String _draggedData = 'Initial Data';
+class _OrderLettersGameState extends State<OrderLettersGame> {
+  final String _wordToOrder = 'FLUTTER';
+  late List<String> _shuffledLetters;
+  late List<String?> _placedLetters;
+  bool _isCorrect = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shuffleWord();
+  }
+
+  void _shuffleWord() {
+    final List<String> letters = _wordToOrder.split('');
+    letters.shuffle(Random());
+    _shuffledLetters = letters;
+    _placedLetters = List.filled(_wordToOrder.length, null);
+    _isCorrect = false;
+  }
+
+  void _checkIfCorrect() {
+    if (_placedLetters.join('') == _wordToOrder) {
+      setState(() {
+        _isCorrect = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Draggable and DragTarget Example'),
+        title: const Text('Order the Letters'),
       ),
       body: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Draggable<String>(
-              data: _draggedData,
-              feedback: Container(
-                padding: const EdgeInsets.all(8.0),
-                color: Colors.blue.withOpacity(0.7),
-                child: Text(
-                  _draggedData,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              childWhenDragging: Container(
-                padding: const EdgeInsets.all(8.0),
-                color: Colors.blue[100],
-                child: Text(
-                  _draggedData,
-                  style: const TextStyle(color: Colors.blueGrey),
-                ),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                color: Colors.blue,
-                child: Text(
-                  _draggedData,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
+            Text(
+              'Unscramble: ${_shuffledLetters.join(' ')}',
+              style: const TextStyle(fontSize: 20),
             ),
-            DragTarget<String>(
-              builder: (
-                  BuildContext context,
-                  List<dynamic> accepted,
-                  List<dynamic> rejected,
-                  ) {
-                return Container(
-                  width: 200.0,
-                  height: 100.0,
-                  color: _targetColor,
-                  child: Center(
-                    child: Text(
-                      accepted.isEmpty
-                          ? 'Drag Here'
-                          : 'Data Accepted: ${accepted.first}',
-                      style: const TextStyle(fontSize: 16),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_wordToOrder.length, (index) {
+                return DragTarget<String>(
+                  builder: (
+                      BuildContext context,
+                      List<dynamic> accepted,
+                      List<dynamic> rejected,
+                      ) {
+                    return Container(
+                      width: 40.0,
+                      height: 40.0,
+                      margin: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        color: _placedLetters[index] == null
+                            ? Colors.grey[300]
+                            : Colors.blue[200],
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _placedLetters[index] ?? '',
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                    );
+                  },
+                  onAccept: (String letter) {
+                    setState(() {
+                      if (_placedLetters[index] == null) {
+                        _placedLetters[index] = letter;
+                        _shuffledLetters.remove(letter);
+                        _checkIfCorrect();
+                      }
+                    });
+                  },
+                  onWillAccept: (String? letter) =>
+                  letter != null && _placedLetters[index] == null,
+                );
+              }),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 8.0,
+              children: _shuffledLetters.map((letter) {
+                return Draggable<String>(
+                  data: letter,
+                  feedback: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        letter,
+                        style: const TextStyle(fontSize: 20, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  childWhenDragging: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        letter,
+                        style: const TextStyle(fontSize: 20, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        letter,
+                        style: const TextStyle(fontSize: 20, color: Colors.white),
+                      ),
                     ),
                   ),
                 );
-              },
-              onWillAccept: (data) {
-                print('onWillAccept: $data');
-                return true; // Return true if you want to accept the data
-              },
-              onAccept: (data) {
+              }).toList(),
+            ),
+            const SizedBox(height: 30),
+            if (_isCorrect)
+              const Text(
+                'Correct!',
+                style: TextStyle(fontSize: 24, color: Colors.green),
+              ),
+            ElevatedButton(
+              onPressed: () {
                 setState(() {
-                  _draggedData = 'New Data from Target';
-                  _targetColor = Colors.green[300]!;
-                });
-                print('onAccept: $data');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('"$data" accepted!')),
-                );
-              },
-              onLeave: (data) {
-                print('onLeave: $data');
-                setState(() {
-                  _targetColor = Colors.grey[300]!;
+                  _shuffleWord();
                 });
               },
+              child: const Text('New Word'),
             ),
           ],
         ),
