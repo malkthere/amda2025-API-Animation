@@ -28,7 +28,7 @@ class OrderLettersGame extends StatefulWidget {
 }
 
 class _OrderLettersGameState extends State<OrderLettersGame> {
-  final String _wordToOrder = 'FLUTTER';
+  final String _wordToOrder = 'Dr.Mazin';
   late List<String> _shuffledLetters;
   late List<String?> _placedLetters;
   bool _isCorrect = false;
